@@ -1,55 +1,146 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Game4Loop - ألعاب مجانية</title>
+  <title>Game4Loop - Free Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      direction: rtl;
-      margin: 0; padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+      color: #333;
     }
-    #games { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      font-size: 28px;
+      margin: 0;
+    }
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #games {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+    }
     .card {
-      background: #fff; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      width: 200px; padding: 10px; text-align: center;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 10px;
+      text-align: center;
     }
-    .card img { width: 100%; border-radius: 4px; }
-    .card h3 { font-size: 16px; margin: 10px 0; }
+    .card img {
+      width: 100%;
+      border-radius: 6px;
+    }
+    .card h3 {
+      font-size: 16px;
+      margin: 10px 0 5px;
+    }
     .card a {
-      display: block; margin-top: 8px; padding: 6px;
-      background: #007bff; color: #fff; text-decoration: none;
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #28a745;
+      color: white;
+      text-decoration: none;
       border-radius: 4px;
+      font-size: 14px;
+    }
+    .card a:hover {
+      background: #218838;
     }
   </style>
 </head>
 <body>
 
-  <h1 style="text-align:center">📚 أحدث الألعاب من GameMonetize</h1>
-  <div id="games">⏳ جاري التحميل...</div>
+  <header>
+    <h1>🎮 Game4Loop - Free Games</h1>
+  </header>
+
+  <div id="controls">
+    <input type="text" id="search" placeholder="Search for a game or genre">
+    <button onclick="loadGames()">🔄 Refresh Games</button>
+  </div>
+
+  <div id="games">Loading games...</div>
 
   <script>
-    fetch('https://gamemonetize.com/feed.php?format=0&num=50&page=1')
-      .then(res => res.json())
-      .then(games => {
-        const container = document.getElementById('games');
-        container.innerHTML = '';
-        games.forEach(g => {
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <img src="${g.thumb}" alt="${g.title}">
-            <h3>${g.title}</h3>
-            <a href="${g.url}" target="_blank">▶️ العب الآن</a>
-          `;
-          container.appendChild(card);
+    let allGames = [];
+
+    function loadGames() {
+      document.getElementById('games').innerHTML = 'Loading games...';
+      fetch('https://gamemonetize.com/feed.php?format=0&num=50&page=1')
+        .then(res => res.json())
+        .then(data => {
+          allGames = data;
+          renderGames(data);
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById('games').textContent = 'Failed to load games.';
         });
-      })
-      .catch(err => {
-        document.getElementById('games').textContent = '❌ فشل التحميل';
-        console.error(err);
+    }
+
+    function renderGames(games) {
+      const container = document.getElementById('games');
+      container.innerHTML = '';
+      if (games.length === 0) {
+        container.textContent = 'No games found.';
+        return;
+      }
+      games.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${game.thumb}" alt="${game.title}">
+          <h3>${game.title}</h3>
+          <a href="${game.url}" target="_blank">Play Now</a>
+        `;
+        container.appendChild(card);
       });
+    }
+
+    document.getElementById('search').addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase();
+      const filtered = allGames.filter(g =>
+        g.title.toLowerCase().includes(query) ||
+        g.genre.toLowerCase().includes(query)
+      );
+      renderGames(filtered);
+    });
+
+    // Initial load
+    loadGames();
   </script>
 
 </body>
